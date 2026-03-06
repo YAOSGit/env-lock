@@ -1,0 +1,25 @@
+{
+	"version": 1,
+	"slots": [
+		{
+			"id": "staging-admin",
+			"kdf": "pbkdf2",
+			"salt": "GxVjG8Uum2QKwYrkCBxgjUgqDUH9rkTm1JIurlfg0sI=",
+			"iterations": 600000,
+			"wrappedKey": "XOTYwGBuLAE0sDJj4jUSyIkDCqRE8IJbFPbRChs+lZUt089vZtAKi4lWQR0=",
+			"wrappingIv": "ebkrnZSbXESZEl9h",
+			"wrappingTag": "/2wN8Vzl0eaVEiW4U6YRRw==",
+			"createdAt": "2026-03-06T17:06:39.871Z"
+		},
+		{
+			"id": "staging-ci",
+			"kdf": "pbkdf2",
+			"salt": "TMiyFsJJly7+n360LPlq3MSu2oV7raFcZxAdZbNvEck=",
+			"iterations": 600000,
+			"wrappedKey": "XesKAFEN1F4i8IRnglYSVGSzAryf9LjBair0fa9/wxnSbbUxNg6rmkhZ5w8=",
+			"wrappingIv": "qIAN2R8xkg6c30SM",
+			"wrappingTag": "bDEtN9VHSSV9jaZKRjRt6g==",
+			"createdAt": "2026-03-06T17:06:40.012Z"
+		}
+	]
+}

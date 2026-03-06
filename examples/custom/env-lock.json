@@ -1,0 +1,35 @@
+{
+	"version": 1,
+	"slots": [
+		{
+			"id": "alice",
+			"kdf": "pbkdf2",
+			"salt": "gl9G7oiqpXS/W/uaopqt5aADOm+ZU6ux82XYjZOm2K4=",
+			"iterations": 600000,
+			"wrappedKey": "tMhEOCzQ/tOgYJjKpU3FD7br5VREBC7ClYaERTMtUGIbDLxrLRmn0rDF0e0=",
+			"wrappingIv": "eF1RC72DruO4WzJZ",
+			"wrappingTag": "Vu2RBaPp97lFwO4Ofu21bw==",
+			"createdAt": "2026-03-06T17:06:39.160Z"
+		},
+		{
+			"id": "bob",
+			"kdf": "pbkdf2",
+			"salt": "Rj9R+ezHSX+2Y5rbMTZ3uipASu4vmnsWIRslhPqp2MQ=",
+			"iterations": 600000,
+			"wrappedKey": "9NYdvKnO0Rzs8yFn4N5tdNBqLMvrJqqyLip6+h4kL+sUUWVFAJnjWUBf1Jg=",
+			"wrappingIv": "EZz/swKNvGzmUeF9",
+			"wrappingTag": "eJmYweSPHjIdMa60q7F5Qw==",
+			"createdAt": "2026-03-06T17:06:39.300Z"
+		},
+		{
+			"id": "carol",
+			"kdf": "pbkdf2",
+			"salt": "xFHrhr0sZ5T4EbP9zBTB1ctOkOl6BPRjDF85cx4+H1I=",
+			"iterations": 600000,
+			"wrappedKey": "rw3Z/hXtqA0n0U//NvaaWG6CSLxbM1osXQNZ+dfrdIU6qIxhffd+8GpCvvk=",
+			"wrappingIv": "6Aeib8fM0XHW71WH",
+			"wrappingTag": "KlYviXquiwKcAHfgcj0Rtw==",
+			"createdAt": "2026-03-06T17:06:39.441Z"
+		}
+	]
+}

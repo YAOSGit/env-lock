@@ -1,0 +1,25 @@
+{
+	"version": 1,
+	"slots": [
+		{
+			"id": "prod-admin",
+			"kdf": "pbkdf2",
+			"salt": "4RqIY0XtXa1qk15o5FwGSBslz67kFqz9lfI+2KWHIyU=",
+			"iterations": 600000,
+			"wrappedKey": "7AcM8u/lNznnI9N8lDTKb2Z5+Nt+UqBoOM/3gf7D7pSA1lHG50gJ8Ybt6J4=",
+			"wrappingIv": "kWoJfyTVHrf3h01O",
+			"wrappingTag": "9dAofRMJJf02F7u5hu4uSg==",
+			"createdAt": "2026-03-06T17:06:40.157Z"
+		},
+		{
+			"id": "prod-ci",
+			"kdf": "pbkdf2",
+			"salt": "AmiFNeHbe4B3/4Be7kfe/GJMzB5EQjs4dI9xIVFXzUA=",
+			"iterations": 600000,
+			"wrappedKey": "RlHKSBc6ilLjpEbnRgx8wJF3Do8jNZspum2Pn+f8oSkdK5sOn45Uf97c+/8=",
+			"wrappingIv": "o7j++nOk/vqrrz9p",
+			"wrappingTag": "14rGubwYIWE6zOnmNEh/fQ==",
+			"createdAt": "2026-03-06T17:06:40.299Z"
+		}
+	]
+}

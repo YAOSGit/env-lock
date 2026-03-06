@@ -1,0 +1,188 @@
+#!/usr/bin/env node
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import chalk from 'chalk';
+import { Command } from 'commander';
+import { aesDecrypt, aesEncrypt } from '../crypto/aes/index.js';
+import { generateMasterKey } from '../crypto/masterKey/index.js';
+import { createSlot, unwrapSlot } from '../crypto/slot/index.js';
+import type { Lockbox } from '../types/Lockbox/index.js';
+import { loadEnvelope, saveEnvelope } from '../utils/envelope/index.js';
+import { parseEnv } from '../utils/envParser/index.js';
+import { executeWithSecrets } from '../utils/executor/index.js';
+import { loadLockbox, saveLockbox } from '../utils/lockbox/index.js';
+import { promptPassword } from '../utils/prompt/index.js';
+
+declare const __CLI_VERSION__: string;
+
+async function getPassword(): Promise<string | null> {
+	const envPassword = process.env.ENV_LOCK_PASSWORD;
+	if (envPassword) return envPassword;
+
+	return promptPassword('Password: ');
+}
+
+export async function runCLI(
+	args: string[] = process.argv.slice(2),
+): Promise<void> {
+	const program = new Command();
+
+	program
+		.name('env-lock')
+		.description('Encrypted environment injection with multi-lock team access')
+		.version(__CLI_VERSION__)
+		.enablePositionalOptions()
+		.exitOverride()
+		.configureOutput({
+			writeOut: (str) => console.log(str),
+			writeErr: (str) => console.error(str),
+		});
+
+	program
+		.command('init')
+		.description('Initialize a new lockbox with the first user slot')
+		.argument('<slot-id>', 'Slot identifier (e.g. your email)')
+		.action(async (slotId: string) => {
+			const existing = loadLockbox();
+			if (existing) {
+				console.error(chalk.red('env-lock.json already exists. Aborting.'));
+				process.exitCode = 1;
+				return;
+			}
+
+			const password = await getPassword();
+			if (!password) {
+				console.error(chalk.red('No password provided.'));
+				process.exitCode = 1;
+				return;
+			}
+
+			const mk = generateMasterKey();
+			const slot = createSlot(mk, password, slotId);
+			const lockbox: Lockbox = { version: 1, slots: [slot] };
+
+			saveLockbox(lockbox);
+			console.log(chalk.green(`Lockbox initialized with slot "${slotId}".`));
+		});
+
+	program
+		.command('seal')
+		.description('Encrypt a .env file into .env.enc')
+		.argument('<file>', 'Path to plain-text .env file')
+		.action(async (file: string) => {
+			const lockbox = loadLockbox();
+			if (!lockbox) {
+				console.error(
+					chalk.red('No env-lock.json found. Run "env-lock init" first.'),
+				);
+				process.exitCode = 1;
+				return;
+			}
+
+			const password = await getPassword();
+			if (!password) {
+				console.error(chalk.red('No password provided.'));
+				process.exitCode = 1;
+				return;
+			}
+
+			let mk: Buffer | null = null;
+			for (const slot of lockbox.slots) {
+				try {
+					mk = unwrapSlot(slot, password);
+					break;
+				} catch {}
+			}
+
+			if (!mk) {
+				console.error(
+					chalk.red('No slot could be unlocked with the provided password.'),
+				);
+				process.exitCode = 1;
+				return;
+			}
+
+			const content = fs.readFileSync(file, 'utf-8');
+			const envelope = aesEncrypt(content, mk);
+			saveEnvelope(envelope);
+			console.log(chalk.green('.env.enc created successfully.'));
+		});
+
+	program
+		.command('run')
+		.description('Decrypt secrets and inject into a child process')
+		.argument('<command...>', 'Command to execute')
+		.allowUnknownOption()
+		.passThroughOptions()
+		.action(async (commandParts: string[]) => {
+			const lockbox = loadLockbox();
+			if (!lockbox) {
+				console.error(
+					chalk.red('No env-lock.json found. Run "env-lock init" first.'),
+				);
+				process.exitCode = 1;
+				return;
+			}
+
+			const envelope = loadEnvelope();
+			if (!envelope) {
+				console.error(
+					chalk.red('No .env.enc found. Run "env-lock seal" first.'),
+				);
+				process.exitCode = 1;
+				return;
+			}
+
+			const password = await getPassword();
+			if (!password) {
+				console.error(chalk.red('No password provided.'));
+				process.exitCode = 1;
+				return;
+			}
+
+			let mk: Buffer | null = null;
+			for (const slot of lockbox.slots) {
+				try {
+					mk = unwrapSlot(slot, password);
+					break;
+				} catch {}
+			}
+
+			if (!mk) {
+				console.error(
+					chalk.red('No slot could be unlocked with the provided password.'),
+				);
+				process.exitCode = 1;
+				return;
+			}
+
+			const plaintext = aesDecrypt(envelope, mk);
+			const secrets = parseEnv(plaintext);
+			const fullCommand = commandParts.join(' ');
+			const exitCode = executeWithSecrets(fullCommand, secrets);
+			process.exitCode = exitCode;
+		});
+
+	try {
+		await program.parseAsync(args, { from: 'user' });
+	} catch (err: unknown) {
+		if (err instanceof Error && 'exitCode' in err) {
+			process.exitCode = (err as { exitCode: number }).exitCode;
+		}
+	}
+}
+
+let isMain = false;
+try {
+	if (process.argv[1]) {
+		const scriptPath = fs.realpathSync(process.argv[1]);
+		const currentFile = fileURLToPath(import.meta.url);
+		isMain = scriptPath === currentFile;
+	}
+} catch {
+	isMain = false;
+}
+
+if (isMain) {
+	runCLI();
+}

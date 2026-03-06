@@ -1,0 +1,15 @@
+{
+	"version": 1,
+	"slots": [
+		{
+			"id": "admin",
+			"kdf": "pbkdf2",
+			"salt": "7Q6y2ZWefvvli5nze+K30Kx+x/FbXp+IEM7hIq6aEVQ=",
+			"iterations": 600000,
+			"wrappedKey": "nZqM+hd6y4HOzSnPkAuOyChTtCDKKkcSpoJRma8e5OQXrKh3FoTMxAEolUY=",
+			"wrappingIv": "4MxvLHn0yTs1VVAW",
+			"wrappingTag": "zN70RBx6dJ0ydf/+WijsnQ==",
+			"createdAt": "2026-03-06T17:06:39.011Z"
+		}
+	]
+}
