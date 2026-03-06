@@ -7,6 +7,7 @@ export type LockboxContextValue = {
 	reload: () => void;
 	addSlot: (slot: Slot) => void;
 	removeSlot: (slotId: string) => void;
+	replaceSlot: (slotId: string, newSlot: Slot) => void;
 };
 
 export type LockboxProviderProps = {

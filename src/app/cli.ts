@@ -19,7 +19,11 @@ async function getPassword(): Promise<string | null> {
 	const envPassword = process.env.ENV_LOCK_PASSWORD;
 	if (envPassword) return envPassword;
 
-	return promptPassword('Password: ');
+	try {
+		return await promptPassword('Password: ');
+	} catch {
+		return null;
+	}
 }
 
 export async function runCLI(
@@ -161,6 +165,70 @@ export async function runCLI(
 			const fullCommand = commandParts.join(' ');
 			const exitCode = executeWithSecrets(fullCommand, secrets);
 			process.exitCode = exitCode;
+		});
+
+	program
+		.command('rotate')
+		.description('Rotate master key and remove all other slots')
+		.action(async () => {
+			const lockbox = loadLockbox();
+			if (!lockbox) {
+				console.error(
+					chalk.red('No env-lock.json found. Run "env-lock init" first.'),
+				);
+				process.exitCode = 1;
+				return;
+			}
+
+			const envelope = loadEnvelope();
+			if (!envelope) {
+				console.error(
+					chalk.red('No .env.enc found. Run "env-lock seal" first.'),
+				);
+				process.exitCode = 1;
+				return;
+			}
+
+			const password = await getPassword();
+			if (!password) {
+				console.error(chalk.red('No password provided.'));
+				process.exitCode = 1;
+				return;
+			}
+
+			let oldMk: Buffer | null = null;
+			let matchedSlotId: string | null = null;
+			for (const slot of lockbox.slots) {
+				try {
+					oldMk = unwrapSlot(slot, password);
+					matchedSlotId = slot.id;
+					break;
+				} catch {}
+			}
+
+			if (!oldMk || !matchedSlotId) {
+				console.error(
+					chalk.red('No slot could be unlocked with the provided password.'),
+				);
+				process.exitCode = 1;
+				return;
+			}
+
+			const plaintext = aesDecrypt(envelope, oldMk);
+			const newMk = generateMasterKey();
+			const newEnvelope = aesEncrypt(plaintext, newMk);
+			saveEnvelope(newEnvelope);
+
+			const newSlot = createSlot(newMk, password, matchedSlotId);
+			const newLockbox: Lockbox = { version: 1, slots: [newSlot] };
+			saveLockbox(newLockbox);
+
+			console.log(chalk.green('Master key rotated successfully.'));
+			console.log(
+				chalk.yellow(
+					'All other slots removed. Re-add team members with the TUI.',
+				),
+			);
 		});
 
 	try {

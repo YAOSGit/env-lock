@@ -47,6 +47,31 @@ describe('env-lock E2E', () => {
 		expect(runOutput.trim()).toBe('hello-world');
 	});
 
+	it('rotate re-keys and preserves secrets', () => {
+		fs.writeFileSync(path.join(tmpDir, '.env'), 'ROTATE_TEST=rotated\n');
+
+		run(['init', 'admin@test.com'], { ENV_LOCK_PASSWORD: 'pass1' });
+		run(['seal', '.env'], { ENV_LOCK_PASSWORD: 'pass1' });
+
+		const rotateOutput = run(['rotate'], { ENV_LOCK_PASSWORD: 'pass1' });
+		expect(rotateOutput).toContain('Master key rotated');
+		expect(rotateOutput).toContain('All other slots removed');
+
+		// Secrets still accessible with same password
+		const runOutput = run(
+			['run', 'node', '-e', 'console.log(process.env.ROTATE_TEST)'],
+			{ ENV_LOCK_PASSWORD: 'pass1' },
+		);
+		expect(runOutput.trim()).toBe('rotated');
+
+		// Lockbox has only one slot
+		const lockbox = JSON.parse(
+			fs.readFileSync(path.join(tmpDir, 'env-lock.json'), 'utf-8'),
+		);
+		expect(lockbox.slots).toHaveLength(1);
+		expect(lockbox.slots[0].id).toBe('admin@test.com');
+	});
+
 	it('run fails without ENV_LOCK_PASSWORD', () => {
 		fs.writeFileSync(path.join(tmpDir, '.env'), 'KEY=value\n');
 		run(['init', 'user@test.com'], { ENV_LOCK_PASSWORD: 'pass' });

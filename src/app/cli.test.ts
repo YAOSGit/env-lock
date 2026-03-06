@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import * as envelopeModule from '../utils/envelope/index.js';
 import * as lockboxModule from '../utils/lockbox/index.js';
 
 vi.mock('../utils/lockbox/index.js', () => ({
@@ -57,6 +58,33 @@ describe('CLI', () => {
 
 	it('does not have add-member command', async () => {
 		await runCLI(['add-member', 'someone']);
+		expect(process.exitCode).toBe(1);
+	});
+
+	it('rotate fails without lockbox', async () => {
+		vi.mocked(lockboxModule.loadLockbox).mockReturnValue(null);
+		await runCLI(['rotate']);
+		expect(process.exitCode).toBe(1);
+	});
+
+	it('rotate fails without envelope', async () => {
+		vi.mocked(lockboxModule.loadLockbox).mockReturnValue({
+			version: 1,
+			slots: [
+				{
+					id: 'admin',
+					kdf: 'pbkdf2',
+					salt: 'c2FsdA==',
+					iterations: 600000,
+					wrappedKey: 'key==',
+					wrappingIv: 'iv==',
+					wrappingTag: 'tag==',
+					createdAt: '2026-01-01T00:00:00.000Z',
+				},
+			],
+		});
+		vi.mocked(envelopeModule.loadEnvelope).mockReturnValue(null);
+		await runCLI(['rotate']);
 		expect(process.exitCode).toBe(1);
 	});
 });

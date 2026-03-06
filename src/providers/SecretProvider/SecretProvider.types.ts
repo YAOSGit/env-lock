@@ -6,6 +6,7 @@ export type SecretContextValue = {
 	isDirty: boolean;
 	isUnlocked: boolean;
 	masterKey: Buffer | null;
+	unlockedSlotId: string | null;
 	unlock: (password: string) => boolean;
 	setSecret: (key: string, value: string) => void;
 	addSecret: (key: string, value: string) => void;

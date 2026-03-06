@@ -24,6 +24,7 @@ export const SecretProvider: React.FC<SecretProviderProps> = ({ children }) => {
 	const [secrets, setSecrets] = useState<EnvMap>({});
 	const [isDirty, setIsDirty] = useState(false);
 	const mkRef = useRef<Buffer | null>(null);
+	const slotIdRef = useRef<string | null>(null);
 
 	const unlock = useCallback(
 		(password: string): boolean => {
@@ -33,6 +34,7 @@ export const SecretProvider: React.FC<SecretProviderProps> = ({ children }) => {
 				try {
 					const mk = unwrapSlot(slot, password);
 					mkRef.current = mk;
+					slotIdRef.current = slot.id;
 
 					const envelope = loadEnvelope();
 					if (envelope) {
@@ -81,6 +83,7 @@ export const SecretProvider: React.FC<SecretProviderProps> = ({ children }) => {
 				isDirty,
 				isUnlocked: mkRef.current !== null,
 				masterKey: mkRef.current,
+				unlockedSlotId: slotIdRef.current,
 				unlock,
 				setSecret,
 				addSecret,

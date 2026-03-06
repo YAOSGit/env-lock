@@ -14,12 +14,13 @@ import type { Tab } from './app.types.js';
 
 export const AppContent: React.FC = () => {
 	const { exit } = useApp();
-	const { lockbox, addSlot, removeSlot } = useLockbox();
+	const { lockbox, addSlot, removeSlot, replaceSlot } = useLockbox();
 	const {
 		secrets,
 		isDirty,
 		isUnlocked,
 		masterKey,
+		unlockedSlotId,
 		unlock,
 		setSecret,
 		addSecret,
@@ -50,6 +51,12 @@ export const AppContent: React.FC = () => {
 		if (!masterKey) return;
 		const slot = createSlot(masterKey, password, slotId);
 		addSlot(slot);
+	};
+
+	const handleReplaceSlot = (slotId: string, newPassword: string) => {
+		if (!masterKey) return;
+		const newSlot = createSlot(masterKey, newPassword, slotId);
+		replaceSlot(slotId, newSlot);
 	};
 
 	// Tab switching and quit handling — must be called unconditionally
@@ -141,8 +148,10 @@ export const AppContent: React.FC = () => {
 			) : (
 				<SlotList
 					slots={lockbox.slots}
+					unlockedSlotId={unlockedSlotId}
 					onAddSlot={handleAddSlot}
 					onRemoveSlot={removeSlot}
+					onReplaceSlot={handleReplaceSlot}
 				/>
 			)}
 
@@ -163,6 +172,33 @@ export const AppContent: React.FC = () => {
 						<Text color="yellow">unsaved</Text>
 					</>
 				) : null}
+				<Text dimColor> | </Text>
+				{activeTab === 'secrets' ? (
+					<>
+						<Text bold>a</Text>
+						<Text> add</Text>
+						<Text dimColor> | </Text>
+						<Text bold>e</Text>
+						<Text> edit</Text>
+						<Text dimColor> | </Text>
+						<Text bold>d</Text>
+						<Text> delete</Text>
+						<Text dimColor> | </Text>
+						<Text bold>s</Text>
+						<Text> save</Text>
+					</>
+				) : (
+					<>
+						<Text bold>a</Text>
+						<Text> add</Text>
+						<Text dimColor> | </Text>
+						<Text bold>e</Text>
+						<Text> edit</Text>
+						<Text dimColor> | </Text>
+						<Text bold>d</Text>
+						<Text> delete</Text>
+					</>
+				)}
 				<Text dimColor> | </Text>
 				<Text bold>{'<>'}</Text>
 				<Text> tabs</Text>

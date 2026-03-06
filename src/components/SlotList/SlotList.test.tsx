@@ -29,7 +29,13 @@ const baseSlots: Slot[] = [
 describe('SlotList', () => {
 	it('renders slot IDs', () => {
 		const { lastFrame } = render(
-			<SlotList slots={baseSlots} onAddSlot={vi.fn()} onRemoveSlot={vi.fn()} />,
+			<SlotList
+				slots={baseSlots}
+				unlockedSlotId="alice@test.com"
+				onAddSlot={vi.fn()}
+				onRemoveSlot={vi.fn()}
+				onReplaceSlot={vi.fn()}
+			/>,
 		);
 		expect(lastFrame()).toContain('alice@test.com');
 		expect(lastFrame()).toContain('bob@test.com');
@@ -37,7 +43,13 @@ describe('SlotList', () => {
 
 	it('shows kdf algorithm', () => {
 		const { lastFrame } = render(
-			<SlotList slots={baseSlots} onAddSlot={vi.fn()} onRemoveSlot={vi.fn()} />,
+			<SlotList
+				slots={baseSlots}
+				unlockedSlotId="alice@test.com"
+				onAddSlot={vi.fn()}
+				onRemoveSlot={vi.fn()}
+				onReplaceSlot={vi.fn()}
+			/>,
 		);
 		expect(lastFrame()).toContain('pbkdf2');
 	});
@@ -48,8 +60,10 @@ describe('SlotList', () => {
 		const { stdin } = render(
 			<SlotList
 				slots={baseSlots}
+				unlockedSlotId="alice@test.com"
 				onAddSlot={vi.fn()}
 				onRemoveSlot={onRemoveSlot}
+				onReplaceSlot={vi.fn()}
 			/>,
 		);
 		await delay();
@@ -64,8 +78,59 @@ describe('SlotList', () => {
 
 	it('shows empty state', () => {
 		const { lastFrame } = render(
-			<SlotList slots={[]} onAddSlot={vi.fn()} onRemoveSlot={vi.fn()} />,
+			<SlotList
+				slots={[]}
+				unlockedSlotId="alice@test.com"
+				onAddSlot={vi.fn()}
+				onRemoveSlot={vi.fn()}
+				onReplaceSlot={vi.fn()}
+			/>,
 		);
 		expect(lastFrame()).toContain('No slots');
+	});
+
+	it('calls onReplaceSlot when e is pressed on unlocked slot', async () => {
+		const delay = () => new Promise((r) => setTimeout(r, 50));
+		const onReplaceSlot = vi.fn();
+		const { stdin } = render(
+			<SlotList
+				slots={baseSlots}
+				unlockedSlotId="alice@test.com"
+				onAddSlot={vi.fn()}
+				onRemoveSlot={vi.fn()}
+				onReplaceSlot={onReplaceSlot}
+			/>,
+		);
+		await delay();
+
+		stdin.write('e');
+		await delay();
+		stdin.write('newpass');
+		await delay();
+		stdin.write('\r');
+		await delay();
+
+		expect(onReplaceSlot).toHaveBeenCalledWith('alice@test.com', 'newpass');
+	});
+
+	it('ignores e on a slot that is not the unlocked slot', async () => {
+		const delay = () => new Promise((r) => setTimeout(r, 50));
+		const onReplaceSlot = vi.fn();
+		const { stdin, lastFrame } = render(
+			<SlotList
+				slots={baseSlots}
+				unlockedSlotId="bob@test.com"
+				onAddSlot={vi.fn()}
+				onRemoveSlot={vi.fn()}
+				onReplaceSlot={onReplaceSlot}
+			/>,
+		);
+		await delay();
+
+		stdin.write('e');
+		await delay();
+
+		expect(onReplaceSlot).not.toHaveBeenCalled();
+		expect(lastFrame()).not.toContain('New password');
 	});
 });

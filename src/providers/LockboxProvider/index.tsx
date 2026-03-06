@@ -39,8 +39,22 @@ export const LockboxProvider: React.FC<LockboxProviderProps> = ({
 		});
 	}, []);
 
+	const replaceSlot = useCallback((slotId: string, newSlot: Slot) => {
+		setLockbox((prev) => {
+			if (!prev) return prev;
+			const updated = {
+				...prev,
+				slots: prev.slots.map((s) => (s.id === slotId ? newSlot : s)),
+			};
+			saveLockbox(updated);
+			return updated;
+		});
+	}, []);
+
 	return (
-		<LockboxContext.Provider value={{ lockbox, reload, addSlot, removeSlot }}>
+		<LockboxContext.Provider
+			value={{ lockbox, reload, addSlot, removeSlot, replaceSlot }}
+		>
 			{children}
 		</LockboxContext.Provider>
 	);
