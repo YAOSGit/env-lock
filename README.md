@@ -1,4 +1,12 @@
-<h1 align="center">Yet another Open Source env-lock</h1>
+<p align="center">
+  <a href="https://github.com/YAOSGit/env-lock">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/YAOSGit/.github/main/profile/images/env-lock.svg">
+      <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/YAOSGit/.github/main/profile/images/env-lock-light.svg">
+      <img src="https://raw.githubusercontent.com/YAOSGit/.github/main/profile/images/env-lock.svg" width="100%" alt="env-lock" />
+    </picture>
+  </a>
+</p>
 
 <p align="center">
   <strong>Security-first encrypted environment injection with multi-lock team access</strong>
