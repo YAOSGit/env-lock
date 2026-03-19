@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { atomicWrite } from '@yaos-git/toolkit/cli';
 import type { Envelope } from '../../types/Envelope/index.js';
 
 const DEFAULT_FILENAME = '.env.enc';
@@ -21,8 +22,6 @@ export function loadEnvelope(filePath?: string): Envelope | null {
 
 export function saveEnvelope(envelope: Envelope, filePath?: string): void {
 	const resolved = filePath ?? getEnvelopePath();
-	const tempPath = `${resolved}.${Date.now()}.tmp`;
 
-	fs.writeFileSync(tempPath, JSON.stringify(envelope, null, '\t'));
-	fs.renameSync(tempPath, resolved);
+	atomicWrite(resolved, JSON.stringify(envelope, null, '\t'));
 }

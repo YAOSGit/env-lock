@@ -1,6 +1,8 @@
 import { Box, Text, useInput } from 'ink';
 import type React from 'react';
 import { useState } from 'react';
+import { useUIStateContext } from '../../providers/UIStateProvider/index.js';
+import { INPUT_COLOR, SELECTED_COLOR, UNSAVED_CHANGES_COLOR } from './SecretList.consts.js';
 import type { Mode, SecretListProps } from './SecretList.types.js';
 
 export const SecretList: React.FC<SecretListProps> = ({
@@ -11,11 +13,24 @@ export const SecretList: React.FC<SecretListProps> = ({
 	onDelete,
 	onSave,
 }) => {
+	const ui = useUIStateContext();
 	const keys = Object.keys(secrets);
 	const [cursor, setCursor] = useState(0);
 	const [mode, setMode] = useState<Mode>({ type: 'browse' });
 
+	const enterInputMode = (next: Mode) => {
+		ui.setInputActive(true);
+		setMode(next);
+	};
+
+	const exitInputMode = () => {
+		ui.setInputActive(false);
+		setMode({ type: 'browse' });
+	};
+
 	useInput((input, key) => {
+		if (ui.confirmation) return;
+
 		if (mode.type === 'browse') {
 			if (key.downArrow) {
 				setCursor((prev) => Math.min(prev + 1, keys.length - 1));
@@ -25,26 +40,24 @@ export const SecretList: React.FC<SecretListProps> = ({
 				setCursor((prev) => Math.max(prev - 1, 0));
 				return;
 			}
-			if (input === 'e' && keys.length > 0) {
+			if ((input === 'e' || key.return) && keys.length > 0) {
 				const k = keys[cursor];
 				if (k !== undefined) {
-					setMode({ type: 'editing', key: k, value: secrets[k] ?? '' });
+					enterInputMode({ type: 'editing', key: k, value: secrets[k] ?? '' });
 				}
 				return;
 			}
-			if (input === 'a') {
-				setMode({ type: 'adding-key', value: '' });
+			if (input === 'n') {
+				enterInputMode({ type: 'adding-key', value: '' });
 				return;
 			}
 			if (input === 'd' && keys.length > 0) {
 				const k = keys[cursor];
 				if (k !== undefined) {
-					setMode({ type: 'confirm-delete', key: k });
+					ui.requestConfirmation(`Delete "${k}"?`, () => {
+						onDelete(k);
+					});
 				}
-				return;
-			}
-			if (input === 's') {
-				onSave();
 				return;
 			}
 			return;
@@ -53,11 +66,11 @@ export const SecretList: React.FC<SecretListProps> = ({
 		if (mode.type === 'editing') {
 			if (key.return) {
 				onEdit(mode.key, mode.value);
-				setMode({ type: 'browse' });
+				exitInputMode();
 				return;
 			}
 			if (key.escape) {
-				setMode({ type: 'browse' });
+				exitInputMode();
 				return;
 			}
 			if (key.backspace || key.delete) {
@@ -73,12 +86,13 @@ export const SecretList: React.FC<SecretListProps> = ({
 		if (mode.type === 'adding-key') {
 			if (key.return) {
 				if (mode.value.length > 0) {
+					// Stay in input mode — transitioning to adding-value, still capturing text
 					setMode({ type: 'adding-value', key: mode.value, value: '' });
 				}
 				return;
 			}
 			if (key.escape) {
-				setMode({ type: 'browse' });
+				exitInputMode();
 				return;
 			}
 			if (key.backspace || key.delete) {
@@ -94,11 +108,11 @@ export const SecretList: React.FC<SecretListProps> = ({
 		if (mode.type === 'adding-value') {
 			if (key.return) {
 				onAdd(mode.key, mode.value);
-				setMode({ type: 'browse' });
+				exitInputMode();
 				return;
 			}
 			if (key.escape) {
-				setMode({ type: 'browse' });
+				exitInputMode();
 				return;
 			}
 			if (key.backspace || key.delete) {
@@ -107,19 +121,6 @@ export const SecretList: React.FC<SecretListProps> = ({
 			}
 			if (input && !key.ctrl && !key.meta) {
 				setMode({ ...mode, value: mode.value + input });
-			}
-			return;
-		}
-
-		if (mode.type === 'confirm-delete') {
-			if (input === 'y' || input === 'Y') {
-				onDelete(mode.key);
-				setMode({ type: 'browse' });
-				return;
-			}
-			if (input === 'n' || input === 'N' || key.escape) {
-				setMode({ type: 'browse' });
-				return;
 			}
 			return;
 		}
@@ -142,11 +143,11 @@ export const SecretList: React.FC<SecretListProps> = ({
 
 				if (isEditing && mode.type === 'editing') {
 					return (
-						<Text key={k} color="cyan">
-							{'> '}
+						<Text key={k} color={SELECTED_COLOR}>
+							{'▸ '}
 							<Text bold>{k}</Text>
 							{' = '}
-							<Text color="green">
+							<Text color={INPUT_COLOR}>
 								{mode.value}
 								{'|'}
 							</Text>
@@ -156,8 +157,8 @@ export const SecretList: React.FC<SecretListProps> = ({
 
 				if (isSelected) {
 					return (
-						<Text key={k} color="cyan">
-							{'> '}
+						<Text key={k} color={SELECTED_COLOR}>
+							{'▸ '}
 							<Text bold>{k}</Text>
 							{' = '}
 							<Text dimColor>{secrets[k]}</Text>
@@ -175,18 +176,10 @@ export const SecretList: React.FC<SecretListProps> = ({
 				);
 			})}
 
-			{mode.type === 'confirm-delete' ? (
-				<Box marginTop={1}>
-					<Text color="yellow">
-						Delete {mode.key}? <Text dimColor>(y/N)</Text>
-					</Text>
-				</Box>
-			) : null}
-
 			{mode.type === 'adding-key' ? (
 				<Box marginTop={1}>
 					<Text>
-						Key: <Text color="green">{mode.value}|</Text>
+						Key: <Text color={INPUT_COLOR}>{mode.value}|</Text>
 					</Text>
 				</Box>
 			) : null}
@@ -194,14 +187,14 @@ export const SecretList: React.FC<SecretListProps> = ({
 			{mode.type === 'adding-value' ? (
 				<Box marginTop={1}>
 					<Text>
-						{mode.key} = <Text color="green">{mode.value}|</Text>
+						{mode.key} = <Text color={INPUT_COLOR}>{mode.value}|</Text>
 					</Text>
 				</Box>
 			) : null}
 
 			{isDirty && mode.type === 'browse' ? (
 				<Box marginTop={1}>
-					<Text color="yellow">Unsaved changes. Press 's' to save.</Text>
+					<Text color={UNSAVED_CHANGES_COLOR}>Unsaved changes. Press 's' to save.</Text>
 				</Box>
 			) : null}
 		</Box>

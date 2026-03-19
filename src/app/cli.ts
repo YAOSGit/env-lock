@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import chalk from 'chalk';
-import { Command } from 'commander';
+import { createCLI, fatalError, formatError, getExitCode, runIfMain } from '@yaos-git/toolkit/cli';
 import { aesDecrypt, aesEncrypt } from '../crypto/aes/index.js';
 import { generateMasterKey } from '../crypto/masterKey/index.js';
 import { createSlot, unwrapSlot } from '../crypto/slot/index.js';
@@ -29,18 +28,20 @@ async function getPassword(): Promise<string | null> {
 export async function runCLI(
 	args: string[] = process.argv.slice(2),
 ): Promise<void> {
-	const program = new Command();
+	const { program } = createCLI({
+		name: 'env-lock',
+		description: 'Encrypted environment injection with multi-lock team access',
+		version: __CLI_VERSION__,
+	});
 
-	program
-		.name('env-lock')
-		.description('Encrypted environment injection with multi-lock team access')
-		.version(__CLI_VERSION__)
-		.enablePositionalOptions()
-		.exitOverride()
-		.configureOutput({
-			writeOut: (str) => console.log(str),
-			writeErr: (str) => console.error(str),
-		});
+	program.configureOutput({
+		writeOut: (str) => {
+			console.log(str);
+		},
+		writeErr: (str) => {
+			console.error(str);
+		},
+	});
 
 	program
 		.command('init')
@@ -49,15 +50,13 @@ export async function runCLI(
 		.action(async (slotId: string) => {
 			const existing = loadLockbox();
 			if (existing) {
-				console.error(chalk.red('env-lock.json already exists. Aborting.'));
-				process.exitCode = 1;
+				fatalError('env-lock.json already exists. Aborting.');
 				return;
 			}
 
 			const password = await getPassword();
 			if (!password) {
-				console.error(chalk.red('No password provided.'));
-				process.exitCode = 1;
+				fatalError('No password provided.');
 				return;
 			}
 
@@ -76,17 +75,13 @@ export async function runCLI(
 		.action(async (file: string) => {
 			const lockbox = loadLockbox();
 			if (!lockbox) {
-				console.error(
-					chalk.red('No env-lock.json found. Run "env-lock init" first.'),
-				);
-				process.exitCode = 1;
+				fatalError('No env-lock.json found. Run "env-lock init" first.');
 				return;
 			}
 
 			const password = await getPassword();
 			if (!password) {
-				console.error(chalk.red('No password provided.'));
-				process.exitCode = 1;
+				fatalError('No password provided.');
 				return;
 			}
 
@@ -99,10 +94,7 @@ export async function runCLI(
 			}
 
 			if (!mk) {
-				console.error(
-					chalk.red('No slot could be unlocked with the provided password.'),
-				);
-				process.exitCode = 1;
+				fatalError('No slot could be unlocked with the provided password.');
 				return;
 			}
 
@@ -121,26 +113,19 @@ export async function runCLI(
 		.action(async (commandParts: string[]) => {
 			const lockbox = loadLockbox();
 			if (!lockbox) {
-				console.error(
-					chalk.red('No env-lock.json found. Run "env-lock init" first.'),
-				);
-				process.exitCode = 1;
+				fatalError('No env-lock.json found. Run "env-lock init" first.');
 				return;
 			}
 
 			const envelope = loadEnvelope();
 			if (!envelope) {
-				console.error(
-					chalk.red('No .env.enc found. Run "env-lock seal" first.'),
-				);
-				process.exitCode = 1;
+				fatalError('No .env.enc found. Run "env-lock seal" first.');
 				return;
 			}
 
 			const password = await getPassword();
 			if (!password) {
-				console.error(chalk.red('No password provided.'));
-				process.exitCode = 1;
+				fatalError('No password provided.');
 				return;
 			}
 
@@ -153,10 +138,7 @@ export async function runCLI(
 			}
 
 			if (!mk) {
-				console.error(
-					chalk.red('No slot could be unlocked with the provided password.'),
-				);
-				process.exitCode = 1;
+				fatalError('No slot could be unlocked with the provided password.');
 				return;
 			}
 
@@ -173,26 +155,19 @@ export async function runCLI(
 		.action(async () => {
 			const lockbox = loadLockbox();
 			if (!lockbox) {
-				console.error(
-					chalk.red('No env-lock.json found. Run "env-lock init" first.'),
-				);
-				process.exitCode = 1;
+				fatalError('No env-lock.json found. Run "env-lock init" first.');
 				return;
 			}
 
 			const envelope = loadEnvelope();
 			if (!envelope) {
-				console.error(
-					chalk.red('No .env.enc found. Run "env-lock seal" first.'),
-				);
-				process.exitCode = 1;
+				fatalError('No .env.enc found. Run "env-lock seal" first.');
 				return;
 			}
 
 			const password = await getPassword();
 			if (!password) {
-				console.error(chalk.red('No password provided.'));
-				process.exitCode = 1;
+				fatalError('No password provided.');
 				return;
 			}
 
@@ -207,10 +182,7 @@ export async function runCLI(
 			}
 
 			if (!oldMk || !matchedSlotId) {
-				console.error(
-					chalk.red('No slot could be unlocked with the provided password.'),
-				);
-				process.exitCode = 1;
+				fatalError('No slot could be unlocked with the provided password.');
 				return;
 			}
 
@@ -235,22 +207,13 @@ export async function runCLI(
 		await program.parseAsync(args, { from: 'user' });
 	} catch (err: unknown) {
 		if (err instanceof Error && 'exitCode' in err) {
-			process.exitCode = (err as { exitCode: number }).exitCode;
+			process.exitCode = getExitCode(err);
+		} else {
+			fatalError(formatError(err));
 		}
 	}
 }
 
-let isMain = false;
-try {
-	if (process.argv[1]) {
-		const scriptPath = fs.realpathSync(process.argv[1]);
-		const currentFile = fileURLToPath(import.meta.url);
-		isMain = scriptPath === currentFile;
-	}
-} catch {
-	isMain = false;
-}
-
-if (isMain) {
+runIfMain(import.meta.url, () => {
 	runCLI();
-}
+});

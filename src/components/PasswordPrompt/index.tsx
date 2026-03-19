@@ -1,6 +1,7 @@
 import { Box, Text, useInput } from 'ink';
 import type React from 'react';
 import { useState } from 'react';
+import { ERROR_COLOR } from './PasswordPrompt.consts.js';
 import type { PasswordPromptProps } from './PasswordPrompt.types.js';
 
 export const PasswordPrompt: React.FC<PasswordPromptProps> = ({
@@ -40,7 +41,7 @@ export const PasswordPrompt: React.FC<PasswordPromptProps> = ({
 
 			{error ? (
 				<Box marginTop={1}>
-					<Text color="red">{error}</Text>
+					<Text color={ERROR_COLOR}>{error}</Text>
 				</Box>
 			) : null}
 		</Box>

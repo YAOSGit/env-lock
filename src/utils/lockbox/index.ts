@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { atomicWrite } from '@yaos-git/toolkit/cli';
 import type { Lockbox } from '../../types/Lockbox/index.js';
 
 const DEFAULT_FILENAME = 'env-lock.json';
@@ -28,12 +29,10 @@ export function loadLockbox(filePath?: string): Lockbox | null {
 export function saveLockbox(lockbox: Lockbox, filePath?: string): void {
 	const resolved = filePath ?? getLockboxPath();
 	const dir = path.dirname(resolved);
-	const tempPath = `${resolved}.${Date.now()}.tmp`;
 
 	if (!fs.existsSync(dir)) {
 		fs.mkdirSync(dir, { recursive: true });
 	}
 
-	fs.writeFileSync(tempPath, JSON.stringify(lockbox, null, '\t'));
-	fs.renameSync(tempPath, resolved);
+	atomicWrite(resolved, JSON.stringify(lockbox, null, '\t'));
 }

@@ -18,7 +18,8 @@
 		"src/**/*.test.ts",
 		"src/**/*.test.tsx",
 		"src/**/*.test-d.ts",
-		"vitest.*.ts"
+		"vitest.*.ts",
+		"e2e/**/*.ts"
 	],
 	"exclude": ["node_modules"]
 }

@@ -1,6 +1,8 @@
 import { Box, Text, useInput } from 'ink';
 import type React from 'react';
 import { useState } from 'react';
+import { useUIStateContext } from '../../providers/UIStateProvider/index.js';
+import { PROMPT_COLOR, SELECTED_COLOR } from './SlotList.consts.js';
 import type { Mode, SlotListProps } from './SlotList.types.js';
 
 export const SlotList: React.FC<SlotListProps> = ({
@@ -10,29 +12,32 @@ export const SlotList: React.FC<SlotListProps> = ({
 	onRemoveSlot,
 	onReplaceSlot,
 }) => {
+	const ui = useUIStateContext();
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [mode, setMode] = useState<Mode>({ type: 'browse' });
 
+	const enterInputMode = (next: Mode) => {
+		ui.setInputActive(true);
+		setMode(next);
+	};
+
+	const exitInputMode = () => {
+		ui.setInputActive(false);
+		setMode({ type: 'browse' });
+	};
+
 	useInput((input, key) => {
-		if (mode.type === 'confirm-delete') {
-			if (input === 'y' || input === 'Y') {
-				onRemoveSlot(mode.slotId);
-				setSelectedIndex((prev) =>
-					Math.max(0, Math.min(prev, slots.length - 2)),
-				);
-			}
-			setMode({ type: 'browse' });
-			return;
-		}
+		if (ui.confirmation) return;
 
 		if (mode.type === 'adding-id') {
 			if (key.return) {
 				const trimmed = mode.value.trim();
 				if (trimmed) {
+					// Stay in input mode — transitioning to adding-password, still capturing text
 					setMode({ type: 'adding-password', slotId: trimmed, value: '' });
 				}
 			} else if (key.escape) {
-				setMode({ type: 'browse' });
+				exitInputMode();
 			} else if (key.backspace || key.delete) {
 				setMode({ ...mode, value: mode.value.slice(0, -1) });
 			} else if (input && !key.ctrl && !key.meta) {
@@ -46,9 +51,9 @@ export const SlotList: React.FC<SlotListProps> = ({
 				if (mode.value) {
 					onAddSlot(mode.slotId, mode.value);
 				}
-				setMode({ type: 'browse' });
+				exitInputMode();
 			} else if (key.escape) {
-				setMode({ type: 'browse' });
+				exitInputMode();
 			} else if (key.backspace || key.delete) {
 				setMode({ ...mode, value: mode.value.slice(0, -1) });
 			} else if (input && !key.ctrl && !key.meta) {
@@ -62,9 +67,9 @@ export const SlotList: React.FC<SlotListProps> = ({
 				if (mode.value) {
 					onReplaceSlot(mode.slotId, mode.value);
 				}
-				setMode({ type: 'browse' });
+				exitInputMode();
 			} else if (key.escape) {
-				setMode({ type: 'browse' });
+				exitInputMode();
 			} else if (key.backspace || key.delete) {
 				setMode({ ...mode, value: mode.value.slice(0, -1) });
 			} else if (input && !key.ctrl && !key.meta) {
@@ -78,15 +83,23 @@ export const SlotList: React.FC<SlotListProps> = ({
 			setSelectedIndex((prev) => Math.max(0, prev - 1));
 		} else if (key.downArrow) {
 			setSelectedIndex((prev) => Math.min(slots.length - 1, prev + 1));
-		} else if (input === 'a') {
-			setMode({ type: 'adding-id', value: '' });
+		} else if (input === 'n') {
+			enterInputMode({ type: 'adding-id', value: '' });
 		} else if (input === 'e' && slots.length > 0) {
 			const selected = slots[selectedIndex];
 			if (selected && selected.id === unlockedSlotId) {
-				setMode({ type: 'editing-password', slotId: selected.id, value: '' });
+				enterInputMode({ type: 'editing-password', slotId: selected.id, value: '' });
 			}
 		} else if (input === 'd' && slots.length > 0) {
-			setMode({ type: 'confirm-delete', slotId: slots[selectedIndex].id });
+			const slot = slots[selectedIndex];
+			if (slot) {
+				ui.requestConfirmation(`Remove slot "${slot.id}"?`, () => {
+					onRemoveSlot(slot.id);
+					setSelectedIndex((prev) =>
+						Math.max(0, Math.min(prev, slots.length - 2)),
+					);
+				});
+			}
 		}
 	});
 
@@ -101,8 +114,8 @@ export const SlotList: React.FC<SlotListProps> = ({
 
 					return (
 						<Box key={slot.id}>
-							<Text color={isSelected ? 'cyan' : undefined}>
-								{isSelected ? '> ' : '  '}
+							<Text color={isSelected ? SELECTED_COLOR : undefined}>
+								{isSelected ? '▸ ' : '  '}
 							</Text>
 							<Text bold>{slot.id}</Text>
 							<Text dimColor>
@@ -116,7 +129,7 @@ export const SlotList: React.FC<SlotListProps> = ({
 
 			{mode.type === 'adding-id' ? (
 				<Box marginTop={1}>
-					<Text color="green">Slot ID (e.g. email): </Text>
+					<Text color={PROMPT_COLOR}>Slot ID (e.g. email): </Text>
 					<Text>{mode.value}</Text>
 					<Text dimColor>|</Text>
 				</Box>
@@ -124,7 +137,7 @@ export const SlotList: React.FC<SlotListProps> = ({
 
 			{mode.type === 'adding-password' ? (
 				<Box marginTop={1}>
-					<Text color="green">Password for {mode.slotId}: </Text>
+					<Text color={PROMPT_COLOR}>Password for {mode.slotId}: </Text>
 					<Text>{'*'.repeat(mode.value.length)}</Text>
 					<Text dimColor>|</Text>
 				</Box>
@@ -132,15 +145,9 @@ export const SlotList: React.FC<SlotListProps> = ({
 
 			{mode.type === 'editing-password' ? (
 				<Box marginTop={1}>
-					<Text color="green">New password for {mode.slotId}: </Text>
+					<Text color={PROMPT_COLOR}>New password for {mode.slotId}: </Text>
 					<Text>{'*'.repeat(mode.value.length)}</Text>
 					<Text dimColor>|</Text>
-				</Box>
-			) : null}
-
-			{mode.type === 'confirm-delete' ? (
-				<Box marginTop={1}>
-					<Text color="yellow">Remove slot "{mode.slotId}"? (y/N)</Text>
 				</Box>
 			) : null}
 		</Box>

@@ -29,6 +29,11 @@ export function buildSpawnEnv(secrets: EnvMap): Record<string, string> {
 	return { ...process.env, ...secrets } as Record<string, string>;
 }
 
+/**
+ * Execute a command with injected secrets in the environment.
+ * NOTE: Cannot delegate to toolkit's spawnCommand because it does not
+ * support custom env injection — env-lock's core use-case.
+ */
 export function executeWithSecrets(command: string, secrets: EnvMap): number {
 	const parsed = parseCommandLine(command);
 	const env = buildSpawnEnv(secrets);

@@ -12,5 +12,4 @@ export type Mode =
 	| { type: 'browse' }
 	| { type: 'adding-id'; value: string }
 	| { type: 'adding-password'; slotId: string; value: string }
-	| { type: 'confirm-delete'; slotId: string }
 	| { type: 'editing-password'; slotId: string; value: string };

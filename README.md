@@ -193,27 +193,29 @@ All cryptographic operations use `node:crypto` built-ins. No third-party crypto 
 
 ## Secret Editor
 
-Launch with `env-lock-tui`. Opens a two-tab terminal UI built with Ink.
+Launch with `env-lock-tui`. Opens a two-panel terminal UI built with Ink.
 
+- Header displays active panel with tab indicators: `● Secrets` / `○ Slots`
 - Auto-unlocks with `ENV_LOCK_PASSWORD` if available; otherwise prompts interactively
+- All available keyboard shortcuts are shown in the footer
 
-### Secrets Tab
+### Secrets Panel
 
-View, edit, add, and delete environment variables. Saving re-encrypts the payload in place — plain-text never touches disk.
+View, edit, add, and delete environment variables. The selected item is marked with a `▸` indicator. Saving re-encrypts the payload in place — plain-text never touches disk.
 
-### Slots Tab
+### Slots Panel
 
-View existing user slots, add new members, and remove members. Adding a member wraps the Master Key with a new key derived from the member's password.
+View existing user slots, add new members, and remove members. Adding a member wraps the Master Key with a new key derived from the member's password. Delete operations require confirmation via a dialog.
 
 ### Keybindings
 
 | Key | Action |
 |-----|--------|
-| `←` / `→` | Switch tabs |
-| `↑` / `↓` | Navigate list |
+| `Tab` | Switch between Secrets and Slots panels |
+| `Up` / `Down` | Navigate list |
 | `e` | Edit selected item |
 | `a` | Add new item |
-| `d` | Delete selected item |
+| `d` | Delete selected item (with confirmation) |
 | `s` | Save changes |
 | `q` | Quit |
 
@@ -221,11 +223,11 @@ View existing user slots, add new members, and remove members. Adding a member w
 
 ## Slot Management
 
-Slot management is integrated into the TUI (**Slots** tab). From the TUI you can:
+Slot management is integrated into the TUI (**Slots** panel). From the TUI you can:
 
 1. View all existing user slots
 2. Add a new member — prompts for a password, derives a key, wraps the Master Key, and saves the slot to `env-lock.json`
-3. Remove a member — deletes the slot from `env-lock.json`
+3. Remove a member — requires confirmation, then deletes the slot from `env-lock.json`
 
 ---
 
@@ -305,9 +307,7 @@ env-lock/
 │   ├── components/             # React (Ink) components
 │   │   ├── PasswordPrompt/     # Password input with masked characters
 │   │   ├── SecretList/         # Env var list with edit/add/delete
-│   │   ├── SlotList/           # User slot list with add/remove
-│   │   ├── ConfirmDialog/      # Yes/No confirmation dialog
-│   │   └── StatusBar/          # Bottom status bar with keybindings
+│   │   └── SlotList/           # User slot list with add/remove
 │   ├── crypto/                 # Cryptographic modules
 │   │   ├── aes/                # AES-256-GCM encrypt/decrypt
 │   │   ├── kdf/                # Key derivation (Argon2id/PBKDF2)

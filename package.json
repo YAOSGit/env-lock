@@ -1,11 +1,11 @@
 {
 	"name": "@yaos-git/env-lock",
-	"version": "126.0.0",
+	"version": "126.1.0",
 	"description": "Security-first encrypted environment injection with multi-lock team access",
 	"main": "dist/cli.js",
 	"bin": {
 		"env-lock": "dist/cli.js",
-		"env-lock-tui": "dist/editor-cli.js"
+		"env-lock-tui": "dist/tui.js"
 	},
 	"files": [
 		"dist"
@@ -25,7 +25,7 @@
 		"test:unit": "vitest run -c vitest.unit.config.ts",
 		"test:react": "vitest run -c vitest.react.config.ts",
 		"test:types": "vitest run -c vitest.type.config.ts",
-		"test:e2e": "vitest run -c vitest.e2e.config.ts",
+		"test:e2e": "npm run build && vitest run -c vitest.e2e.config.ts",
 		"coverage": "vitest run --coverage",
 		"coverage:unit": "vitest run -c vitest.unit.config.ts --coverage",
 		"coverage:react": "vitest run -c vitest.react.config.ts --coverage",
@@ -56,31 +56,31 @@
 	},
 	"license": "ISC",
 	"engines": {
-		"node": ">=18.0.0"
+		"node": ">=20"
 	},
 	"type": "module",
 	"dependencies": {
+		"@yaos-git/toolkit": "0.0.26-3-19a",
 		"chalk": "^5.6.2",
 		"commander": "^14.0.3",
-		"zod": "^3.25.0"
+		"zod": "^4.3.6"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.3.8",
-		"@inkjs/ui": "^2.0.0",
+		"@biomejs/biome": "^2.4.8",
 		"@size-limit/file": "^11.2.0",
 		"@testing-library/react": "^16.3.0",
-		"@types/node": "^25.0.1",
+		"@types/node": "^25.5.0",
 		"@types/react": "^19.2.7",
 		"@typescript/native-preview": "^7.0.0-dev.20251216",
-		"@vitest/coverage-v8": "^4.0.15",
+		"@vitest/coverage-v8": "^4.1.0",
 		"@yaos-git/run-tui": "^126.0.0",
 		"esbuild": "^0.27.1",
-		"ink": "^6.5.1",
+		"ink": "^6.8.0",
 		"ink-testing-library": "^4.0.0",
 		"jsdom": "^27.3.0",
-		"react": "^19.2.3",
+		"react": "^19.2.4",
 		"size-limit": "^11.2.0",
 		"strip-ansi": "^7.1.2",
-		"vitest": "^4.0.15"
+		"vitest": "^4.1.0"
 	}
 }

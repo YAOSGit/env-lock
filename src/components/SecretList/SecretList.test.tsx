@@ -1,5 +1,26 @@
 import { render } from 'ink-testing-library';
 import { describe, expect, it, vi } from 'vitest';
+
+const mockRequestConfirmation = vi.fn((_message: string, onConfirm: () => void) => {
+	// auto-confirm when tests trigger confirmation
+	onConfirm();
+});
+
+vi.mock('../../providers/UIStateProvider/index.js', () => ({
+	useUIStateContext: () => ({
+		activeOverlay: 'none',
+		setActiveOverlay: vi.fn(),
+		confirmation: null,
+		requestConfirmation: mockRequestConfirmation,
+		clearConfirmation: vi.fn(),
+		cycleFocus: vi.fn(),
+		inputActive: false,
+		setInputActive: vi.fn(),
+		activeTab: 'secrets',
+		setActiveTab: vi.fn(),
+	}),
+}));
+
 import { SecretList } from './index.js';
 
 describe('SecretList', () => {

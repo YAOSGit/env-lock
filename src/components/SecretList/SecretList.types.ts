@@ -13,5 +13,4 @@ export type Mode =
 	| { type: 'browse' }
 	| { type: 'editing'; key: string; value: string }
 	| { type: 'adding-key'; value: string }
-	| { type: 'adding-value'; key: string; value: string }
-	| { type: 'confirm-delete'; key: string };
+	| { type: 'adding-value'; key: string; value: string };

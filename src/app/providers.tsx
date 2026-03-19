@@ -1,6 +1,7 @@
 import type React from 'react';
 import { LockboxProvider } from '../providers/LockboxProvider/index.js';
 import { SecretProvider } from '../providers/SecretProvider/index.js';
+import { UIStateProvider } from '../providers/UIStateProvider/index.js';
 
 export type AppProvidersProps = {
 	children: React.ReactNode;
@@ -9,7 +10,9 @@ export type AppProvidersProps = {
 export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
 	return (
 		<LockboxProvider>
-			<SecretProvider>{children}</SecretProvider>
+			<SecretProvider>
+				<UIStateProvider>{children}</UIStateProvider>
+			</SecretProvider>
 		</LockboxProvider>
 	);
 };
