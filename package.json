@@ -1,6 +1,6 @@
 {
 	"name": "@yaos-git/env-lock",
-	"version": "126.1.0",
+	"version": "226.0.0",
 	"description": "Security-first encrypted environment injection with multi-lock team access",
 	"main": "dist/cli.js",
 	"bin": {

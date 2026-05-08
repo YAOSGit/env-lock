@@ -1,0 +1,25 @@
+{
+	"version": 1,
+	"slots": [
+		{
+			"id": "dev-admin",
+			"kdf": "pbkdf2",
+			"salt": "ZL8VF+2j2f9wsEXPniSRAW7DJumFNO0XScp8nG7ODRw=",
+			"iterations": 600000,
+			"wrappedKey": "Gs90Lybl+NgWkS1BBzEis/pD2eZEB5pnXpMw2vFoCaFNYKKgphi65SPX09Q=",
+			"wrappingIv": "HhrRwrTbdfLU/CRE",
+			"wrappingTag": "A8K/m0sRJVkzMmfIv5OlAA==",
+			"createdAt": "2026-03-06T17:06:39.584Z"
+		},
+		{
+			"id": "dev-ci",
+			"kdf": "pbkdf2",
+			"salt": "cTDgOJy7ByuiX6yIOs1G5tLsnCOEXOzKN5LeU0j/XOA=",
+			"iterations": 600000,
+			"wrappedKey": "RlvrXMGEk/RueZQxTFQfIQ3nukAPQE/I638gABwPbEt9KGhuIU8KR/uVMO4=",
+			"wrappingIv": "GhZASds1qgSlJCKo",
+			"wrappingTag": "XyPpazD36XbOcEO0jRHfLQ==",
+			"createdAt": "2026-03-06T17:06:39.727Z"
+		}
+	]
+}
