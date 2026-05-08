@@ -17,7 +17,11 @@ describe('env-lock CLI flags', () => {
 		fs.rmSync(tmpDir, { recursive: true, force: true });
 	});
 
-	function run(args: string[]): { stdout: string; stderr: string; exitCode: number } {
+	function run(args: string[]): {
+		stdout: string;
+		stderr: string;
+		exitCode: number;
+	} {
 		try {
 			const stdout = execFileSync('node', [CLI, ...args], {
 				cwd: tmpDir,

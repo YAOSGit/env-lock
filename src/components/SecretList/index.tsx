@@ -2,7 +2,11 @@ import { Box, Text, useInput } from 'ink';
 import type React from 'react';
 import { useState } from 'react';
 import { useUIStateContext } from '../../providers/UIStateProvider/index.js';
-import { INPUT_COLOR, SELECTED_COLOR, UNSAVED_CHANGES_COLOR } from './SecretList.consts.js';
+import {
+	INPUT_COLOR,
+	SELECTED_COLOR,
+	UNSAVED_CHANGES_COLOR,
+} from './SecretList.consts.js';
 import type { Mode, SecretListProps } from './SecretList.types.js';
 
 export const SecretList: React.FC<SecretListProps> = ({
@@ -194,7 +198,9 @@ export const SecretList: React.FC<SecretListProps> = ({
 
 			{isDirty && mode.type === 'browse' ? (
 				<Box marginTop={1}>
-					<Text color={UNSAVED_CHANGES_COLOR}>Unsaved changes. Press 's' to save.</Text>
+					<Text color={UNSAVED_CHANGES_COLOR}>
+						Unsaved changes. Press 's' to save.
+					</Text>
 				</Box>
 			) : null}
 		</Box>

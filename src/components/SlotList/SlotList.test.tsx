@@ -2,9 +2,11 @@ import { render } from 'ink-testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import type { Slot } from '../../types/Slot/index.js';
 
-const mockRequestConfirmation = vi.fn((_message: string, onConfirm: () => void) => {
-	onConfirm();
-});
+const mockRequestConfirmation = vi.fn(
+	(_message: string, onConfirm: () => void) => {
+		onConfirm();
+	},
+);
 
 vi.mock('../../providers/UIStateProvider/index.js', () => ({
 	useUIStateContext: () => ({

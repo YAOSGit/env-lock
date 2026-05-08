@@ -44,7 +44,9 @@ const PROJECT_COMMANDS: EnvLockCommand[] = [
 		footerOrder: 3,
 		isEnabled: notInputting,
 		execute: (deps) =>
-			deps.ui.setActiveTab(deps.ui.activeTab === 'secrets' ? 'slots' : 'secrets'),
+			deps.ui.setActiveTab(
+				deps.ui.activeTab === 'secrets' ? 'slots' : 'secrets',
+			),
 	},
 	// Save
 	{
@@ -168,5 +170,5 @@ const PROJECT_COMMANDS: EnvLockCommand[] = [
 const { CommandsProvider, useCommands, COMMANDS } =
 	createCommandsProvider<EnvLockDeps>(PROJECT_COMMANDS);
 
-export { CommandsProvider, useCommands, COMMANDS, PROJECT_COMMANDS };
 export type { EnvLockCommand, EnvLockDeps };
+export { COMMANDS, CommandsProvider, PROJECT_COMMANDS, useCommands };

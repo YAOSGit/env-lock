@@ -23,6 +23,7 @@ export const SecretProvider: React.FC<SecretProviderProps> = ({ children }) => {
 	const { lockbox } = useLockbox();
 	const [secrets, setSecrets] = useState<EnvMap>({});
 	const [isDirty, setIsDirty] = useState(false);
+	const [isUnlocked, setIsUnlocked] = useState(false);
 	const mkRef = useRef<Buffer | null>(null);
 	const slotIdRef = useRef<string | null>(null);
 
@@ -41,6 +42,7 @@ export const SecretProvider: React.FC<SecretProviderProps> = ({ children }) => {
 						const plaintext = aesDecrypt(envelope, mk);
 						setSecrets(parseEnv(plaintext));
 					}
+					setIsUnlocked(true);
 
 					return true;
 				} catch {}
@@ -81,7 +83,7 @@ export const SecretProvider: React.FC<SecretProviderProps> = ({ children }) => {
 			value={{
 				secrets,
 				isDirty,
-				isUnlocked: mkRef.current !== null,
+				isUnlocked,
 				masterKey: mkRef.current,
 				unlockedSlotId: slotIdRef.current,
 				unlock,

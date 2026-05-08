@@ -29,6 +29,11 @@ export function createSlot(
 	};
 }
 
+// NOTE: unwrapSlot throws on failure (auth tag mismatch for wrong password,
+// or other errors for corrupted data). Callers that iterate slots and catch
+// errors cannot currently distinguish "wrong password" from "corrupted slot"
+// because both surface as opaque AES-GCM decryption failures. A future
+// improvement could inspect the error type and surface a diagnostic hint.
 export function unwrapSlot(slot: Slot, password: string): Buffer {
 	const wrappingKey = deriveKey(password, slot.salt, {
 		algorithm: slot.kdf,

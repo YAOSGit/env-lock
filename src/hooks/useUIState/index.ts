@@ -1,5 +1,8 @@
+import type {
+	OverlayState,
+	PendingConfirmation,
+} from '@yaos-git/toolkit/types';
 import { useCallback, useMemo, useState } from 'react';
-import type { OverlayState, PendingConfirmation } from '@yaos-git/toolkit/types';
 
 export type EnvLockOverlay = 'help';
 type Tab = 'secrets' | 'slots';
@@ -32,9 +35,12 @@ export function useUIState(): UseUIStateReturn {
 		setState((s) => ({ ...s, overlay: overlay as EnvLockOverlay | 'none' }));
 	}, []);
 
-	const requestConfirmation = useCallback((message: string, onConfirm: () => void) => {
-		setState((s) => ({ ...s, confirmation: { message, onConfirm } }));
-	}, []);
+	const requestConfirmation = useCallback(
+		(message: string, onConfirm: () => void) => {
+			setState((s) => ({ ...s, confirmation: { message, onConfirm } }));
+		},
+		[],
+	);
 
 	const clearConfirmation = useCallback(() => {
 		setState((s) => ({ ...s, confirmation: null }));
@@ -63,6 +69,14 @@ export function useUIState(): UseUIStateReturn {
 			activeTab: state.activeTab,
 			setActiveTab,
 		}),
-		[state, setActiveOverlay, requestConfirmation, clearConfirmation, cycleFocus, setInputActive, setActiveTab],
+		[
+			state,
+			setActiveOverlay,
+			requestConfirmation,
+			clearConfirmation,
+			cycleFocus,
+			setInputActive,
+			setActiveTab,
+		],
 	);
 }

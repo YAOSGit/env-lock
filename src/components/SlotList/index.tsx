@@ -88,7 +88,11 @@ export const SlotList: React.FC<SlotListProps> = ({
 		} else if (input === 'e' && slots.length > 0) {
 			const selected = slots[selectedIndex];
 			if (selected && selected.id === unlockedSlotId) {
-				enterInputMode({ type: 'editing-password', slotId: selected.id, value: '' });
+				enterInputMode({
+					type: 'editing-password',
+					slotId: selected.id,
+					value: '',
+				});
 			}
 		} else if (input === 'd' && slots.length > 0) {
 			const slot = slots[selectedIndex];

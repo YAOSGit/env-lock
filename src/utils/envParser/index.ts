@@ -14,7 +14,12 @@ export function parseEnv(content: string): EnvMap {
 		let value = trimmed.slice(eqIndex + 1).trim();
 
 		if (value.startsWith('"') && value.endsWith('"')) {
-			value = value.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+			value = value
+				.slice(1, -1)
+				.replace(/\\n/g, '\n')
+				.replace(/\\r/g, '\r')
+				.replace(/\\"/g, '"')
+				.replace(/\\\\/g, '\\');
 		} else if (value.startsWith("'") && value.endsWith("'")) {
 			value = value.slice(1, -1);
 		}
@@ -28,9 +33,16 @@ export function parseEnv(content: string): EnvMap {
 export function serializeEnv(env: EnvMap): string {
 	return Object.entries(env)
 		.map(([key, value]) => {
-			const needsQuotes = /[\s"']/.test(value);
-			const escaped = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-			return needsQuotes ? `${key}="${escaped}"` : `${key}=${value}`;
+			const needsQuotes = /[\s"'\n\r]/.test(value) || value !== value.trim();
+			if (needsQuotes) {
+				const escaped = value
+					.replace(/\\/g, '\\\\')
+					.replace(/"/g, '\\"')
+					.replace(/\n/g, '\\n')
+					.replace(/\r/g, '\\r');
+				return `${key}="${escaped}"`;
+			}
+			return `${key}=${value}`;
 		})
 		.join('\n');
 }

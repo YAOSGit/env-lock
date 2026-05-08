@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
+import {
+	createCLI,
+	fatalError,
+	formatError,
+	getExitCode,
+	runIfMain,
+} from '@yaos-git/toolkit/cli';
 import chalk from 'chalk';
-import { createCLI, fatalError, formatError, getExitCode, runIfMain } from '@yaos-git/toolkit/cli';
 import { aesDecrypt, aesEncrypt } from '../crypto/aes/index.js';
 import { generateMasterKey } from '../crypto/masterKey/index.js';
 import { createSlot, unwrapSlot } from '../crypto/slot/index.js';
@@ -189,11 +195,14 @@ export async function runCLI(
 			const plaintext = aesDecrypt(envelope, oldMk);
 			const newMk = generateMasterKey();
 			const newEnvelope = aesEncrypt(plaintext, newMk);
-			saveEnvelope(newEnvelope);
 
 			const newSlot = createSlot(newMk, password, matchedSlotId);
 			const newLockbox: Lockbox = { version: 1, slots: [newSlot] };
+
+			// Save lockbox first — if crash occurs here, old envelope still works with old slot
 			saveLockbox(newLockbox);
+			// Then save new envelope — old lockbox still has old slot as fallback
+			saveEnvelope(newEnvelope);
 
 			console.log(chalk.green('Master key rotated successfully.'));
 			console.log(

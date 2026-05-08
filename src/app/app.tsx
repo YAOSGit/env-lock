@@ -1,8 +1,7 @@
-import { Box, Text } from 'ink';
-import { useApp } from 'ink';
+import { TUILayout } from '@yaos-git/toolkit/tui/components';
+import { Box, Text, useApp } from 'ink';
 import type React from 'react';
 import { useCallback, useEffect, useMemo } from 'react';
-import { TUILayout } from '@yaos-git/toolkit/tui/components';
 import { COMMANDS, CommandsProvider } from '../commands/index.js';
 import type { EnvLockDeps } from '../commands/types.js';
 import { PasswordPrompt } from '../components/PasswordPrompt/index.js';
@@ -70,9 +69,17 @@ export const AppContent: React.FC = () => {
 	);
 
 	const header = isUnlocked ? (
-		<Box width="100%" borderStyle="round" borderColor="gray" paddingX={1} justifyContent="space-between">
+		<Box
+			width="100%"
+			borderStyle="round"
+			borderColor="gray"
+			paddingX={1}
+			justifyContent="space-between"
+		>
 			<Text wrap="truncate">
-				<Text bold color={theme.brand}>env-lock</Text>
+				<Text bold color={theme.brand}>
+					env-lock
+				</Text>
 				{isDirty ? <Text color={theme.warning}> (unsaved)</Text> : null}
 			</Text>
 			<Box gap={2}>
@@ -95,7 +102,9 @@ export const AppContent: React.FC = () => {
 	if (!lockbox) {
 		return (
 			<Box padding={1}>
-				<Text color={theme.error}>No env-lock.json found. Run "env-lock init" first.</Text>
+				<Text color={theme.error}>
+					No env-lock.json found. Run "env-lock init" first.
+				</Text>
 			</Box>
 		);
 	}
